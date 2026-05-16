@@ -1,0 +1,81 @@
+---
+import type { Project } from '@/data/projects';
+import IconLink from './IconLink.astro';
+
+type Props = {
+  project: Project;
+};
+
+const { project } = Astro.props;
+---
+
+<article class:list={['project-card', { featured: project.featured }]}>
+  <div class:list={['project-preview', project.preview.type, { 'has-image': project.image }]} aria-label={`${project.title} preview`}>
+    {project.image ? (
+      <img src={project.image.src} alt={project.image.alt} loading="lazy" decoding="async" />
+    ) : (
+      <>
+        <div class="preview-top">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+        {project.preview.type === 'dashboard' && (
+          <div class="preview-dashboard">
+            <div class="preview-chart">
+              <span style="--height: 48%"></span>
+              <span style="--height: 76%"></span>
+              <span style="--height: 58%"></span>
+              <span style="--height: 88%"></span>
+            </div>
+            <div class="preview-list">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        )}
+
+        {project.preview.type === 'workflow' && (
+          <div class="preview-workflow">
+            <span></span>
+            <i></i>
+            <span></span>
+            <i></i>
+            <span></span>
+          </div>
+        )}
+
+        {project.preview.type === 'analytics' && (
+          <div class="preview-analytics">
+            <div></div>
+            <div></div>
+            <div></div>
+          </div>
+        )}
+      </>
+    )}
+
+    <div class="preview-caption">
+      <strong>{project.preview.label}</strong>
+      <span>{project.preview.metric}</span>
+    </div>
+  </div>
+
+  <div class="project-card-top">
+    <span class="status">{project.status}</span>
+    <h3>{project.title}</h3>
+  </div>
+
+  <p>{project.description}</p>
+
+  <ul class="tag-list" aria-label={`${project.title} technologies`}>
+    {project.tech.map((item) => <li>{item}</li>)}
+  </ul>
+
+  <div class="project-links">
+    {project.repo && <IconLink href={project.repo} label="Repo" icon="github" />}
+    {project.demo && <IconLink href={project.demo} label="Demo" icon="arrow" />}
+  </div>
+</article>

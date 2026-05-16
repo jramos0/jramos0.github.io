@@ -1,0 +1,85 @@
+---
+import { stack } from '@/data/profile';
+
+const nodes = stack;
+const nodeById = new Map(nodes.map((node) => [node.id, node]));
+const connections = nodes.flatMap((node) =>
+  node.connections
+    .map((targetId) => {
+      const target = nodeById.get(targetId);
+      return target ? { from: node, to: target } : null;
+    })
+    .filter((connection) => connection !== null),
+);
+---
+
+<div class="tech-network-frame">
+  <div class="tech-network" aria-label="Connected technology stack">
+    <svg class="network-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      {connections.map(({ from, to }) => (
+        <line x1={from.x} y1={from.y} x2={to.x} y2={to.y} />
+      ))}
+    </svg>
+
+    {nodes.map((node) => (
+      <div
+        class="tech-node"
+        data-node
+        style={`--x: ${node.x}%; --y: ${node.y}%; --tx: 0px; --ty: 0px`}
+      >
+        <span class="tech-dot" aria-hidden="true">{node.icon}</span>
+        <span class="tech-label">{node.label}</span>
+      </div>
+    ))}
+  </div>
+</div>
+
+<script>
+  const network = document.querySelector('.tech-network');
+
+  if (network instanceof HTMLElement) {
+    const nodes = [...network.querySelectorAll('[data-node]')];
+    let activeNode: HTMLElement | null = null;
+    let startX = 0;
+    let startY = 0;
+
+    const moveNode = (event: PointerEvent) => {
+      if (!activeNode) return;
+
+      const maxDistance = 58;
+      const deltaX = event.clientX - startX;
+      const deltaY = event.clientY - startY;
+      const distance = Math.hypot(deltaX, deltaY);
+      const scale = distance > maxDistance ? maxDistance / distance : 1;
+
+      activeNode.style.setProperty('--tx', `${deltaX * scale}px`);
+      activeNode.style.setProperty('--ty', `${deltaY * scale}px`);
+    };
+
+    const releaseNode = () => {
+      if (!activeNode) return;
+
+      activeNode.classList.remove('is-dragging');
+      activeNode.style.setProperty('--tx', '0px');
+      activeNode.style.setProperty('--ty', '0px');
+      activeNode = null;
+    };
+
+    for (const node of nodes) {
+      if (!(node instanceof HTMLElement)) continue;
+
+      node.addEventListener('pointerdown', (event) => {
+        activeNode = node;
+        startX = event.clientX;
+        startY = event.clientY;
+        node.classList.add('is-dragging');
+        node.setPointerCapture(event.pointerId);
+      });
+
+      node.addEventListener('pointermove', moveNode);
+      node.addEventListener('pointerup', releaseNode);
+      node.addEventListener('pointercancel', releaseNode);
+      node.addEventListener('lostpointercapture', releaseNode);
+    }
+  }
+</script>

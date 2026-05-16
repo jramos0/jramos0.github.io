@@ -1,0 +1,126 @@
+---
+import IconLink from './IconLink.astro';
+import { profile } from '@/data/profile';
+---
+
+<section class="hero" id="top">
+  <canvas class="hero-canvas" id="universe-canvas" aria-hidden="true"></canvas>
+  <div class="hero-glow" aria-hidden="true"></div>
+
+  <div class="hero-content">
+    <p class="kicker">{profile.role}</p>
+    <h1>
+      <span>Hello there...</span>
+      <span>This is a sneak peek of my world</span>
+    </h1>
+    <p class="hero-copy">{profile.intro}</p>
+
+    <div class="hero-actions" aria-label="Primary links">
+      <a class="button primary" href="#projects">View Projects</a>
+      <IconLink href={profile.githubUrl} label="GitHub" icon="github" />
+      <IconLink href={profile.linkedinUrl} label="LinkedIn" icon="linkedin" />
+    </div>
+  </div>
+</section>
+
+<script>
+  const canvas = document.getElementById('universe-canvas');
+
+  if (canvas instanceof HTMLCanvasElement) {
+    const context = canvas.getContext('2d');
+    const pointer = { x: 0, y: 0, active: false };
+    let stars: { x: number; y: number; radius: number; speed: number; drift: number; alpha: number }[] = [];
+    let animationFrame = 0;
+
+    const createStars = () => {
+      const count = Math.min(130, Math.floor((canvas.width * canvas.height) / 11000));
+      stars = Array.from({ length: count }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        radius: Math.random() * 1.7 + 0.35,
+        speed: Math.random() * 0.38 + 0.08,
+        drift: Math.random() * 0.45 - 0.225,
+        alpha: Math.random() * 0.55 + 0.25,
+      }));
+    };
+
+    const resize = () => {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * ratio;
+      canvas.height = rect.height * ratio;
+      context?.setTransform(ratio, 0, 0, ratio, 0, 0);
+      createStars();
+    };
+
+    const draw = () => {
+      if (!context) return;
+
+      const rect = canvas.getBoundingClientRect();
+      context.clearRect(0, 0, rect.width, rect.height);
+      const gradient = context.createRadialGradient(rect.width * 0.5, rect.height * 0.38, 30, rect.width * 0.5, rect.height * 0.38, rect.width * 0.72);
+      gradient.addColorStop(0, 'rgba(56, 189, 248, 0.16)');
+      gradient.addColorStop(0.42, 'rgba(37, 99, 235, 0.08)');
+      gradient.addColorStop(1, 'rgba(5, 10, 20, 0)');
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, rect.width, rect.height);
+
+      for (const star of stars) {
+        const dx = pointer.active ? pointer.x - star.x : 0;
+        const dy = pointer.active ? pointer.y - star.y : 0;
+        const distance = Math.hypot(dx, dy);
+        const pull = pointer.active && distance < 160 ? (160 - distance) / 160 : 0;
+
+        star.x += star.drift + dx * pull * 0.006;
+        star.y += star.speed + dy * pull * 0.006;
+
+        if (star.y > rect.height + 10) star.y = -10;
+        if (star.x > rect.width + 10) star.x = -10;
+        if (star.x < -10) star.x = rect.width + 10;
+
+        context.beginPath();
+        context.arc(star.x, star.y, star.radius + pull * 1.2, 0, Math.PI * 2);
+        context.fillStyle = `rgba(125, 211, 252, ${star.alpha + pull * 0.45})`;
+        context.fill();
+      }
+
+      for (let i = 0; i < stars.length; i += 1) {
+        for (let j = i + 1; j < stars.length; j += 1) {
+          const first = stars[i];
+          const second = stars[j];
+          const distance = Math.hypot(first.x - second.x, first.y - second.y);
+
+          if (distance < 86) {
+            context.beginPath();
+            context.moveTo(first.x, first.y);
+            context.lineTo(second.x, second.y);
+            context.strokeStyle = `rgba(59, 130, 246, ${0.16 * (1 - distance / 86)})`;
+            context.lineWidth = 1;
+            context.stroke();
+          }
+        }
+      }
+
+      animationFrame = window.requestAnimationFrame(draw);
+    };
+
+    window.addEventListener('resize', resize);
+    canvas.addEventListener('pointermove', (event) => {
+      const rect = canvas.getBoundingClientRect();
+      pointer.x = event.clientX - rect.left;
+      pointer.y = event.clientY - rect.top;
+      pointer.active = true;
+    });
+    canvas.addEventListener('pointerleave', () => {
+      pointer.active = false;
+    });
+
+    resize();
+    draw();
+
+    document.addEventListener('astro:before-swap', () => {
+      window.cancelAnimationFrame(animationFrame);
+      window.removeEventListener('resize', resize);
+    });
+  }
+</script>

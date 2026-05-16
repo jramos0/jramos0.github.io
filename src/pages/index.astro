@@ -1,0 +1,115 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Hero from '@/components/Hero.astro';
+import ProjectCard from '@/components/ProjectCard.astro';
+import SectionHeading from '@/components/SectionHeading.astro';
+import IconLink from '@/components/IconLink.astro';
+import TechNetwork from '@/components/TechNetwork.astro';
+import { experiments, projects } from '@/data/projects';
+import { interests, profile } from '@/data/profile';
+---
+
+<BaseLayout>
+  <header class="site-header">
+    <a href="#top" class="brand" aria-label="Back to top">
+      <span>jr</span>
+      {profile.alias}
+    </a>
+    <nav aria-label="Main navigation">
+      <a href="#projects">Projects</a>
+      <a href="#stack">Stack</a>
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <Hero />
+
+    <section class="section" id="projects">
+      <SectionHeading
+        eyebrow="Projects"
+        title="Features, systems, and product work."
+        description="Most of my experience comes from internal company work, so these previews describe the kind of features I helped build without exposing private details."
+      />
+
+      <div class="project-grid">
+        {projects.map((project) => <ProjectCard project={project} />)}
+      </div>
+    </section>
+
+    <section class="section stack-section" id="stack">
+      <SectionHeading
+        eyebrow="Stack"
+        title="Connected tools, languages, and AI workflows."
+        description="A decentralized map of the technologies and concepts I work with."
+      />
+
+      <TechNetwork />
+    </section>
+
+    <section class="section split-section" id="experiments">
+      <div>
+        <SectionHeading
+          eyebrow="Work in progress"
+          title="Experiments that turn into stronger projects."
+          description="This section keeps the portfolio honest while the public project list grows."
+        />
+      </div>
+
+      <div class="experiment-list">
+        {experiments.map((experiment) => (
+          <article>
+            <h3>{experiment.title}</h3>
+            <p>{experiment.description}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section class="section about-section" id="about">
+      <SectionHeading
+        eyebrow="About"
+        title="Building across UI, backend, and data."
+        description="This portfolio is a living place for work, experiments, notes, and projects as they become public."
+      />
+
+      <div class="about-grid">
+        <div class="about-copy">
+          <p>
+            I am {profile.alias}, a full-stack web developer focused on practical interfaces,
+            backend logic, useful data views, and the kind of systems that can keep improving over time.
+          </p>
+          <p>
+            My strongest interests are open source, programming, Bitcoin, AI, backend systems,
+            and data analysis. I like tools that give people more ownership, better workflows,
+            and a cleaner way to solve real problems.
+          </p>
+        </div>
+
+        <div class="interest-panel" aria-label="Main interests">
+          {interests.map((interest) => <span>{interest}</span>)}
+        </div>
+      </div>
+    </section>
+
+    <section class="section contact-section" id="contact">
+      <SectionHeading
+        eyebrow="Contact"
+        title="Let’s build something useful."
+        description="Open to collaborate on web projects, open source, Bitcoin-related ideas, and AI-assisted workflows."
+      />
+
+      <div class="contact-actions">
+        <IconLink href={profile.githubUrl} label="GitHub" icon="github" />
+        <IconLink href={profile.linkedinUrl} label="LinkedIn" icon="linkedin" />
+        <IconLink href={`mailto:${profile.email}`} label="Email" icon="mail" />
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <span>{profile.alias}</span>
+    <span>{new Date().getFullYear()}</span>
+  </footer>
+</BaseLayout>
